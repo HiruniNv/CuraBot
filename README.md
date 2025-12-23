@@ -1,70 +1,112 @@
-# ⚕️ CuraBot: AI-Powered Medical Research Assistant
+# ⚕️ CuraBot: AI-Powered Medical Research Assistant 🩺
 
-**CuraBot** is a full-stack AI agent application that bridges the gap between patient symptoms and peer-reviewed medical literature. Using **CrewAI** and **Llama 3.3 (via Groq)**, the system orchestrates a team of specialized AI agents to extract symptoms, search **PubMed**, and provide evidence-based summaries.
+## 📖 Description
 
----
-
-## 🚀 Features
-- **Multi-Agent Orchestration:** Uses CrewAI to manage a Classifier, a Researcher, and a Safety Advisor.
-- **Real-time Research:** Integrated with the NCBI PubMed API to fetch the latest medical abstracts.
-- **High-Speed Inference:** Powered by Groq's Llama-3.3-70b model for high-quality medical reasoning.
-- **Professional UI:** A clean, Streamlit-based dashboard for easy user interaction.
+**CuraBot** is an advanced agentic system designed to bridge the gap between user symptoms and peer-reviewed medical literature. By leveraging a **multi-agent architecture** and the **PubMed database**, it provides evidence-based research summaries to help users understand their health concerns through the lens of current medical science.
 
 ---
 
-## 🛠️ Tech Stack
-- **Backend:** FastAPI, Python
-- **AI Framework:** CrewAI, LangChain
-- **LLM:** Groq (Llama 3.3 70B)
-- **Frontend:** Streamlit
-- **Data Source:** BioPython (PubMed/Entrez)
+## 📝 Overview
+
+This project provides a professional interface for medical research. When a user inputs symptoms, the system triggers a specialized pipeline of AI agents that perform live searches on the National Center for Biotechnology Information (NCBI) database.
+
+The final output is a structured **research report** derived from real-world medical abstracts, ensuring that the information provided is grounded in scientific data rather than just general AI knowledge.
 
 ---
 
-## 📂 Project Structure
-```text
-CuraBot/
-├── backend/
-│   ├── main.py          # FastAPI Server & CrewAI Logic
-│   ├── agents.py        # Agent Definitions
-│   └── tools.py         # PubMed Search Tool
-├── frontend/
-│   └── app.py           # Streamlit UI
-├── .env                 # API Keys (Excluded from Git)
-├── requirements.txt     # Project Dependencies
-└── README.md            # Documentation
+## ✨ Features
 
-⚙️ Setup & Installation
-1. Clone the repository
+* **Natural Language Processing**: Describe symptoms in plain English.
+* **Live PubMed Integration**: Fetches real-time data using BioPython and the Entrez API.
+* **Multi-Agent Orchestration**: Managed by CrewAI to ensure a structured research workflow.
+* **High-Speed Inference**: Powered by Llama 3.3 via Groq for rapid analysis.
+* **Modern Dashboard**: A clean, responsive Streamlit interface for seamless user interaction.
 
-git clone [https://github.com/YOUR_USERNAME/CuraBot.git](https://github.com/YOUR_USERNAME/CuraBot.git)
+---
+
+## 🤖 System Architecture
+
+CuraBot employs three specialized agents to handle the research lifecycle:
+
+* **Medical Classifier Agent** 🧩
+* Extracts key medical terms and symptoms from user input.
+* Formats data into optimized search queries for medical databases.
+
+
+* **PubMed Researcher Agent** 🔍
+* Executes live searches on PubMed.
+* Analyzes abstracts and filters for the most relevant scientific literature.
+
+
+* **Safety & Summary Agent** 💡
+* Synthesizes findings into a readable research summary.
+* Ensures all responses include necessary safety warnings and evidence-based insights.
+
+
+
+---
+
+## 💻 Technology Stack
+
+* **Backend**: Python, FastAPI
+* **Frontend**: Streamlit
+* **AI Framework**: CrewAI, LangChain
+* **LLM**: Groq (Llama 3.3 70B)
+* **Data Source**: BioPython (NCBI PubMed/Entrez)
+
+---
+
+## 🚀 Getting Started
+
+### ✅ Prerequisites
+
+* Python **3.9 or higher**
+* A **Groq API Key**
+* A valid email address (required for NCBI/PubMed API access)
+
+### 📥 Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/your-username/CuraBot.git
 cd CuraBot
 
-2. Configure Environment Variables
-Create a .env file in the root directory:
+```
 
-GROQ_API_KEY=your_groq_key_here
+2. Create a `.env` file in the root directory:
+
+```env
+GROQ_API_KEY=your_api_key_here
 NCBI_EMAIL=your_email@example.com
 
-3. Install Dependencies
+```
 
+3. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+
+```
+
+### 🏃 How to Run
+
+1. **Start the Backend**:
+
+```bash
 uvicorn backend.main:app --reload
 
-🏃 How to Run
-Step 1: Start the Backend (Terminal 1)
+```
 
-uvicorn backend.main:app --reload
+2. **Start the Frontend** (In a new terminal):
 
-Step 2: Start the Frontend (Terminal 2)
-
+```bash
 streamlit run frontend/app.py
 
-🔍 Troubleshooting
-No analysis found: Ensure the Backend terminal is running and check for any Groq API rate limits.
+```
 
-Wait Time: Because the agents are performing live research on PubMed, it may take 30-60 seconds to generate a full report.
+---
 
-Environment Errors: Ensure you have selected the correct Python interpreter (venv) in VS Code.
+## ⚠️ Disclaimer
 
-⚠️ Disclaimer
-This tool is for research and educational purposes only. It is not a medical device and does not provide medical diagnoses, clinical advice, or treatment recommendations. The information provided is generated by AI agents searching public databases and may contain inaccuracies. Always consult with a licensed healthcare professional for medical advice.
+This tool is for **informational and research purposes only**. It is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of a physician or other qualified health provider with any questions regarding a medical condition. Never disregard professional medical advice because of information generated by this application.
