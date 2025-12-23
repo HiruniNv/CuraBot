@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from crewai import Crew, Process
-from .agents import classifier_agent, matcher_agent, advisor_agent
-from .tasks import create_tasks
+from backend.agents import classifier_agent, matcher_agent, advisor_agent
+from backend.tasks import create_tasks
 
 app = FastAPI(title="CuraBot Backend")
 
