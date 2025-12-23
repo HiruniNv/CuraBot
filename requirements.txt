@@ -1,0 +1,8 @@
+crewai
+langchain_openai
+fastapi
+uvicorn
+streamlit
+biopython
+python-dotenv
+requests
