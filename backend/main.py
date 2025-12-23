@@ -15,7 +15,8 @@ async def analyze(symptoms: str):
             process=Process.sequential
         )
         result = crew.kickoff()
-        return {"result": str(result)}
+        # Changed "result" to "analysis" to match the frontend request
+        return {"analysis": str(result)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
