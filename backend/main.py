@@ -19,7 +19,7 @@ async def analyze(symptoms: str):
                 agents=[classifier_agent, matcher_agent, advisor_agent],
                 tasks=tasks,
                 process=Process.sequential,
-                max_rpm=3 # Keeps your API keys safe from rate limits
+                max_rpm=3 # Keeps  API keys safe from rate limits
             )
             
             # Execute workflow
@@ -37,3 +37,4 @@ async def analyze(symptoms: str):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+   

@@ -29,3 +29,4 @@ def search_pubmed(query: str):
         return results
     except Exception as e:
         return f"Error searching PubMed: {str(e)}"
+   

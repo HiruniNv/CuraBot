@@ -7,7 +7,7 @@ from backend.tools import search_pubmed
 load_dotenv()
 
 # Define the LLM configuration for Groq
-# We use Llama-3.3-70b-versatile for high-quality medical reasoning
+# Use Llama-3.3-70b-versatile for high-quality medical reasoning
 medical_llm = LLM(
     model="groq/llama-3.3-70b-versatile",
     api_key=os.getenv("GROQ_API_KEY"),
