@@ -1,43 +1,57 @@
 import os
-from crewai import Agent, LLM
-from backend.tools import search_pubmed # Changed this import
 from dotenv import load_dotenv
+from crewai import Agent, LLM
+from backend.tools import search_pubmed
 
+# Load environment variables from .env
 load_dotenv()
 
-# 1. Define the Groq Brain
-groq_llm = LLM(
+# Define the LLM configuration for Groq
+# We use Llama-3.3-70b-versatile for high-quality medical reasoning
+medical_llm = LLM(
     model="groq/llama-3.3-70b-versatile",
     api_key=os.getenv("GROQ_API_KEY"),
-    temperature=0.2  
+    temperature=0.2 # Lower temperature for higher clinical accuracy
 )
 
-# 2. Define the Specialized Agents
+# --- Define Agents ---
 
 classifier_agent = Agent(
-    role='Clinical Symptom Classifier',
-    goal='Identify and extract formal medical symptoms from natural language user input.',
-    backstory="Expert clinical scribe converting patient descriptions into formal terms.",
-    llm=groq_llm,
+    role="Medical Symptom Triage Specialist",
+    goal="Extract and refine medical keywords from the user symptoms: {symptoms}",
+    backstory=(
+        "You are an expert at medical intake. You turn casual descriptions into "
+        "professional clinical terms (e.g., 'stomach pain' to 'abdominal distress') "
+        "to ensure high-quality research matches."
+    ),
+    llm=medical_llm,
     allow_delegation=False,
     verbose=True
 )
 
 matcher_agent = Agent(
-    role='Medical Research Researcher',
-    goal='Search PubMed to find peer-reviewed literature.',
-    backstory="Medical research scientist using PubMed for evidence-based info.",
-    tools=[search_pubmed], # Clean, direct function call
-    llm=groq_llm,
+    role="Clinical Research Librarian",
+    goal="Use PubMed to find the most relevant clinical trials and research papers.",
+    backstory=(
+        "You are a master of medical databases. You use the search_pubmed tool to "
+        "find evidence-based research. You strictly ignore irrelevant geographical results "
+        "and focus on pathology and human clinical studies."
+    ),
+    tools=[search_pubmed],
+    llm=medical_llm,
     allow_delegation=False,
     verbose=True
 )
 
 advisor_agent = Agent(
-    role='Health Information Advisor',
-    goal='Provide a clear summary with mandatory safety warnings.',
-    backstory="Patient safety officer ensuring findings are non-diagnostic.",
-    llm=groq_llm,
+    role="Medical Research Advisor",
+    goal="Synthesize research findings into a structured, empathetic, and professional medical report.",
+    backstory=(
+        "You are a senior medical consultant. You translate complex research into "
+        "clear, actionable information. You focus on structure, clarity, and "
+        "always prioritize patient safety with clear disclaimers."
+    ),
+    llm=medical_llm,
     allow_delegation=False,
     verbose=True
 )
