@@ -1,44 +1,43 @@
 from crewai import Task
 
 def create_tasks(user_input, classifier, matcher, advisor):
+    # Task 1: Refine symptoms into search queries
     t1 = Task(
         description=(
             f"Analyze the user's input: '{user_input}'. "
-            "Identify and extract specific medical symptoms and duration. "
-            "Convert them into professional medical keywords for a PubMed search."
+            "Identify the most likely clinical conditions and search terms."
         ),
-        expected_output="A structured list of medical symptoms and search keywords.",
+        expected_output="A list of professional medical search keywords.",
         agent=classifier
     )
     
+    # Task 2: Search for relevant clinical evidence
     t2 = Task(
         description=(
-            "Using the keywords from the classifier, search PubMed for recent clinical studies, "
-            "systematic reviews, or trials. Focus strictly on human health data. "
-            "Avoid results that are purely geographical or unrelated to the pathology of the symptoms."
+            "Using the refined keywords, search PubMed for recent clinical studies or trials. "
+            "Focus on papers that explain the most likely causes of the symptoms."
         ),
-        expected_output="A summarized list of the most relevant research papers with titles and key findings.",
+        expected_output="A summary of the most relevant research findings.",
         agent=matcher,
         context=[t1]
     )
     
+    # Task 3: Format the final output for the CuraBot Dashboard
     t3 = Task(
         description=(
-            "Synthesize the research findings into a professional, empathetic report. "
-            "Use the following structure strictly:\n"
+            "Synthesize findings into a professional report using this exact structure:\n"
             "### 🩺 CURABOT MEDICAL RESEARCH SUMMARY\n"
-            "**Reported Symptoms:** [Summary of symptoms]\n\n"
+            "Reported Symptoms: [Summary]\n\n"
             "--- \n"
             "### 🔍 KEY RESEARCH FINDINGS\n"
-            "[List specific study insights here]\n\n"
+            "[Relevant study summaries]\n\n"
             "--- \n"
             "### 💡 CLINICAL CONSIDERATIONS\n"
-            "[General medical context based on the research]\n\n"
+            "[Contextualized medical reasoning]\n\n"
             "### 📋 NEXT STEPS\n"
-            "- [Non-prescriptive advice like 'Consult a specialist']\n\n"
-            "**Disclaimer:** CuraBot is an AI research tool. Not a diagnosis. Consult a doctor."
+            "[Professional advice and disclaimer]"
         ),
-        expected_output="A complete, professional Markdown-formatted medical research report.",
+        expected_output="A complete Markdown-formatted medical research report.",
         agent=advisor,
         context=[t2]
     )
