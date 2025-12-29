@@ -42,6 +42,7 @@ matcher_agent = Agent(
 )
 
 # Agent 3: Advisor to compile the final professional report
+# UPDATED: Using llama-3.1-8b-instant to handle large research volumes without 500 errors
 advisor_agent = Agent(
     role="Medical Research Advisor",
     goal="Synthesize research findings into a structured, professional medical report.",
@@ -49,7 +50,12 @@ advisor_agent = Agent(
         "You translate complex research into clear, actionable information. You ensure "
         "the structure is professional and strictly adheres to safety disclaimers."
     ),
-    llm=medical_llm,
+    llm=LLM(
+        model="groq/llama-3.1-8b-instant",
+        api_key=os.getenv("GROQ_API_KEY"),
+        temperature=0.1
+    ),
     allow_delegation=False,
     verbose=True
 )
+
