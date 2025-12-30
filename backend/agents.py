@@ -3,59 +3,79 @@ from dotenv import load_dotenv
 from crewai import Agent, LLM
 from backend.tools import search_pubmed
 
-# Load environment variables
 load_dotenv()
 
-# Configuration for the Groq LLM
-medical_llm = LLM(
+# ============================================================================
+# LLM CONFIGURATION - OPTIMIZED FOR GROQ FREE TIER
+# ============================================================================
+
+# THE WORKHORSE: Used for keyword extraction and data searching.
+# 8B is fast and has higher rate limits.
+fast_llm = LLM(
+    model="groq/llama-3.1-8b-instant",
+    api_key=os.getenv("GROQ_API_KEY"),
+    temperature=0.1,
+    max_tokens=1024  # REDUCED from 2048 to prevent overflow
+)
+
+# THE BRAIN: Used only for the final synthesis.
+# 70B is smart but has very strict token-per-minute limits.
+clinical_llm = LLM(
     model="groq/llama-3.3-70b-versatile",
     api_key=os.getenv("GROQ_API_KEY"),
-    temperature=0.1  # Set low for higher clinical accuracy and relevance
+    temperature=0.1,
+    max_tokens=2048  # Keep higher for final report
 )
 
-# Agent 1: Specialist to refine raw symptoms into clinical search terms
+# ============================================================================
+# AGENT DEFINITIONS - MINIMAL ITERATIONS TO PREVENT TOKEN LOOPS
+# ============================================================================
+
+# Agent 1: Extracts clinical terms
 classifier_agent = Agent(
     role="Medical Symptom Triage Specialist",
-    goal="Extract and refine medical keywords from the user symptoms: {symptoms}",
+    goal="Extract exactly 2-3 medical keywords from: {symptoms}",
     backstory=(
-        "You are an expert at medical intake. You convert casual descriptions into "
-        "professional clinical MeSH terms to ensure high-quality research matches."
+        "You are an expert at converting patient descriptions into "
+        "concise MeSH terms. Keep responses under 20 words."
     ),
-    llm=medical_llm,
+    llm=fast_llm,
+    max_iter=1,        # CRITICAL: Only 1 iteration to prevent looping
+    max_rpm=10,        
     allow_delegation=False,
     verbose=True
 )
 
-# Agent 2: Researcher to find evidence-based papers on PubMed
+# Agent 2: Searches and reads PubMed
+# CRITICAL FIX: max_iter=1 prevents the agent from retrying on token errors
 matcher_agent = Agent(
     role="Clinical Research Librarian",
-    goal="Use PubMed to find relevant clinical trials and research papers for {symptoms}.",
+    goal="Find ONE relevant clinical study and provide a 2-sentence summary.",
     backstory=(
-        "You are a master of medical databases. You prioritize human clinical trials "
-        "and systematic reviews. You ignore rare case reports unless they are directly "
-        "relevant to the user's symptoms to ensure the most helpful results."
+        "You are a master of medical databases. You extract ONLY the title "
+        "and conclusion from PubMed studies. Keep all responses under 100 words."
     ),
     tools=[search_pubmed],
-    llm=medical_llm,
+    llm=fast_llm, 
+    max_iter=1,        # CRITICAL: Only 1 attempt - if tool returns data, use it immediately
+    max_rpm=2,         
     allow_delegation=False,
     verbose=True
 )
 
-# Agent 3: Advisor to compile the final professional report
-# UPDATED: Using llama-3.1-8b-instant to handle large research volumes without 500 errors
+# Agent 3: The Advisor (The "Brain")
+# This agent now gets minimal input from Agent 2, so it won't overflow
 advisor_agent = Agent(
     role="Medical Research Advisor",
-    goal="Synthesize research findings into a structured, professional medical report.",
+    goal="Create a brief, professional medical research summary in Markdown.",
     backstory=(
-        "You translate complex research into clear, actionable information. You ensure "
-        "the structure is professional and strictly adheres to safety disclaimers."
+        "You are a senior clinical consultant. You take short research summaries "
+        "and format them into clear, concise reports with disclaimers. "
+        "Keep reports under 400 words."
     ),
-    llm=LLM(
-        model="groq/llama-3.1-8b-instant",
-        api_key=os.getenv("GROQ_API_KEY"),
-        temperature=0.1
-    ),
+    llm=clinical_llm,
+    max_iter=1,        # Single iteration for final output
+    max_rpm=1,         
     allow_delegation=False,
     verbose=True
 )
-

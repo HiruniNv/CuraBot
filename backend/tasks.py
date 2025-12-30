@@ -1,45 +1,54 @@
 from crewai import Task
 
 def create_tasks(user_input, classifier, matcher, advisor):
-    # Task 1: Refine symptoms into search queries
-    t1 = Task(
+    """
+    Creates a token-optimized task chain for medical research.
+    
+    KEY OPTIMIZATION: All tasks are deliberately short and direct
+    to prevent token overflow errors with Groq free tier.
+    """
+    
+    # Task 1: Extract keywords ONLY - no explanations
+    task1 = Task(
         description=(
-            f"Analyze the user's input: '{user_input}'. "
-            "Identify the most likely clinical conditions and search terms."
+            f"Input: '{user_input}'\n"
+            "Task: List 2-3 MeSH medical terms. Nothing else."
         ),
-        expected_output="A list of professional medical search keywords.",
+        expected_output="3 keywords separated by commas.",
         agent=classifier
     )
     
-    # Task 2: Search for relevant clinical evidence
-    t2 = Task(
+    # Task 2: Search and summarize in ONE sentence
+    # CRITICAL: explicitly limit output length to prevent token overflow
+    task2 = Task(
         description=(
-            "Using the refined keywords, search PubMed for recent clinical studies or trials. "
-            "Focus on papers that explain the most likely causes of the symptoms."
+            "Use the keywords to search PubMed. "
+            "Return: Title of 1 study + 1 sentence summary. "
+            "Maximum 50 words total."
         ),
-        expected_output="A summary of the most relevant research findings.",
+        expected_output="Study title and 1-sentence finding.",
         agent=matcher,
-        context=[t1]
+        context=[task1]
     )
     
-    # Task 3: Format the final output for the CuraBot Dashboard
-    t3 = Task(
+    # Task 3: Final report with strict length limits
+    task3 = Task(
         description=(
-            "Synthesize findings into a professional report using this exact structure:\n"
-            "### 🩺 CURABOT MEDICAL RESEARCH SUMMARY\n"
-            "Reported Symptoms: [Summary]\n\n"
-            "--- \n"
-            "### 🔍 KEY RESEARCH FINDINGS\n"
-            "[Relevant study summaries]\n\n"
-            "--- \n"
-            "### 💡 CLINICAL CONSIDERATIONS\n"
-            "[Contextualized medical reasoning]\n\n"
+            "Create a medical report using this template:\n\n"
+            "### 🩺 RESEARCH SUMMARY\n"
+            "**Input:** [1 sentence]\n\n"
+            "### 🔍 FINDING\n"
+            "[2 sentences from research]\n\n"
+            "### 💡 CONSIDERATIONS\n"
+            "[2-3 bullet points]\n\n"
             "### 📋 NEXT STEPS\n"
-            "[Professional advice and disclaimer]"
+            "⚠️ This is research info, not diagnosis. See a doctor.\n"
+            "[Suggest 1 medical department]\n\n"
+            "IMPORTANT: Total report must be under 300 words."
         ),
-        expected_output="A complete Markdown-formatted medical research report.",
+        expected_output="A complete Markdown report under 300 words.",
         agent=advisor,
-        context=[t2]
+        context=[task2]
     )
     
-    return [t1, t2, t3]
+    return [task1, task2, task3]
